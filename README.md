@@ -32,7 +32,10 @@ These disassemblies are annotated and documented by a variety of authors includi
 
 ## Sources
 
-- [http://www.fruitcake.plus.com/Sinclair/Spectrum128/ROMDisassembly/Spectrum128ROMDisassembly.htm](128K disassemblies)
-- [https://web.archive.org/web/20150430214523/http://www.wearmouth.demon.co.uk/](ZX80, ZX81, 48K disassemblies)
-- [http://scratchpad.wikia.com/wiki/Sinclair_BASIC_History](Information on who created what)
-- [https://skoolkid.github.io/rom/](Online HTML cross-linked disassembly)
+[http://www.fruitcake.plus.com/Sinclair/Spectrum128/ROMDisassembly/Spectrum128ROMDisassembly.htm](128K disassemblies)
+
+[https://web.archive.org/web/20150430214523/http://www.wearmouth.demon.co.uk/](ZX80, ZX81, 48K disassemblies)
+
+[http://scratchpad.wikia.com/wiki/Sinclair_BASIC_History](Information on who created what)
+
+[https://skoolkid.github.io/rom/](Online HTML cross-linked disassembly)
