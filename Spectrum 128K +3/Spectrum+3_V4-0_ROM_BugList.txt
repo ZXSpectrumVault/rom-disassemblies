@@ -1,0 +1,389 @@
+********************************
+*** SPECTRUM +3 ROM BUG LIST ***
+********************************
+This document contains a reformatted version of the Spectrum +3 ROM bug list compiled by Ian Collier
+(Ian.Collier-AT-comlab.ox.ac.uk, imc-AT-ecs.ox.ac.uk) and initially posted on comp.sys.sinclar on 15th March 1994.
+Revised 23rd January 2017.
+
+It lists all confirmed bugs within version 4.0 of the Spectrum +3 ROMs. A number of bugs subsequently found
+in the Spectrum 128 may also apply to the Spectrum +3 but this has not yet been determined. Most Spectrum +3
+machines have ROM version 4.0 while most Spectrum +2A machines have ROM version 4.1. The version number fitted
+in a machine may be determined from the system test message. Unless otherwise stated, the discoverer of each
+bug is credited to Ian Collier.
+
+
+================
+STRANGE FEATURES
+================
+
+------------------
+ROM 0 (EDITOR ROM)
+------------------
+
+Description: From the test screen, press keys Q, A, Z, P, L and M together.
+             This brings up the system test (which starts at $21DF and occupies
+             most of the rest of the ROM).
+
+Description: From the test screen, press keys E, U and A together and then
+             play a tape (this routine is at $22D0-$22FD).
+
+Description: The test screen can be ended by pressing B and V together.  The
+             machine resets.
+
+Description: The editor has a bunch of editing keys (table at $05E6):
+             - TAB     up 10
+             - AT      down 10
+             - CODE    left word
+             - VAL$    right word
+             - INKEY$  top
+             - RND     bottom
+             - FN      start of line
+             - PI      end of line
+             - SCREEN$ delete char right
+             - COS     delete word right
+             - TAN     delete word left
+             - VAL     delete line right
+             - LEN     delete line left
+             - POINT   screen (same as "Screen" in +3 basic menu)
+
+------------------
+ROM 1 (SYNTAX ROM)
+------------------
+
+Location:    $25CB
+Discoverer:  Michal Skrzypek
+Description: Upon terminating a BASIC program, either via reaching the end of
+             the program or due to an error occurring, execution is passed to
+             this routine. The first action it does is to reset the stack pointer
+             to point to the location of RAMTOP, i.e. after the GO SUB marker.
+             However, this means that any existing GO SUB calls that were on the
+             stack are lost and so attempting to continue the program (without the
+             use of CLEAR or RUN) will likely lead to a "7 RETURN without GOSUB"
+             error report message being displayed. When a new typed in command is
+             executed, the code above sets up a new GO SUB marker on the stack.
+
+Description: At $2AA8 is the message "You should never see this".  It is right,
+             because error messages are generated from a message address table,
+             and the address of this message isn't in that table.
+
+Description: At $2AC1 is the message "Hello there!"
+
+Description: At $3283 is the name of the temporary file used by COPY:
+             "M:VAXNSUZ.$$$".  Don't save a file of this name and expect
+             it to stay there while you copy a file from disk to disk!
+
+Description: At $35C4 is the COPY RANDOMIZE routine.  Between the time you press
+             enter after typing this command and the appearance of the red error
+             cursor, you have about a quarter of a second in which to press
+             simultaneously the keys C, J and L. Don't use this command when
+             you have valuable data in memory!
+
+
+====
+BUGS
+====
+
+------------------
+ROM 1 (SYNTAX ROM)
+------------------
+
+Location:    $046D
+Description: The erase message goes to a recently-used stream, not always to
+             the lower screen.  For example, PRINT : ERASE "*.bak" prints
+             the "Erase *.bak?"  message on the main screen.  Also, the
+             lower screen is cleared only if you press Y. If you press N
+             then the message stays there even if it was printed in the
+             right place.
+
+Location:    $0769
+Description: "SUB $40" should be "SUB $3F".  The effect of this is that the
+             CAT command will only give up to 63 file names, even if there
+             are more files on the disk.
+
+Location:    $083E
+Description: The jump is made to an incorrect location if the load-bytes
+             routine is called to verify.  This is mostly harmless, because
+             the BASIC VERIFY command doesn't attempt to verify at all.
+
+Location:    $0998
+Description: A file name such as "T:file" is correctly diverted to tape, but
+             does not have its leading "T:" stripped off.
+
+Location:    $1236
+Description: CLEAR may leave the GOSUB stack without an end marker if it was
+             non-empty before the CLEAR [example 1].
+
+Location:    $1883
+Description: A volume instruction in a PLAY command attempts to output the
+             volume to the sound chip even for channels 4 to 8 [example 2].
+             It should not output the volume at all, since that will be
+             done at $1C74.  Not only is it one time-unit early to output
+             the volume [example 3], but it also means that PLAY "V10&"
+             and PLAY "&","V10" both make spurious sounds.
+
+Location:    $189B
+Description: The U instruction in a PLAY command sets the stored volume
+             number to $1F even for channels 4 to 8. The programmer appears
+             to have intended to output this value to the sound chip, but
+             forgotten.  This is a bonus (see above).  Note that notes sent
+             to a MIDI channel will be of volume 15 after a U instruction,
+             even on channels 4 to 8.
+
+Location:    $1BFA
+Description: A key-up signal is sent to the MIDI port even after a rest.
+             This signal will be for the most recently played note in the
+             current string.  For instance, PLAY "Y1a&","Y1N9a" will sound
+             only for a minim.
+
+Location:    $1F08
+Description: The delay to wait for stop bits after an input is (BAUD)-7.
+             This value is not checked for overflow, so this delay
+             effectively prevents communication at 19200 baud, which
+             would otherwise be OK.
+
+Location:    $2017
+Description: TVPARS is set to accept two parameters after a colour control
+             code, rather than just 1. This means that the A in LPRINT INK
+             3;"A" is absorbed.  This routine also exits with carry and
+             zero reset unless the character was an INK control (see $2B60
+             and example 4).
+
+Location:    $2020
+Description: Any control byte is stored in TVDATA, which might change in
+             certain unusual circumstances [example 5].
+
+Location:    $202B
+Description: When all the bytes of a colour control routine have been
+             received, this routine returns with carry and zero both
+             reset (see $2B60 and example 4).
+
+Location:    $219C
+Description: A "LD (TVFLAG),1" should probably be "LD (DFSZ),1" (harmless).
+
+Location:    $21FA
+Description: COPY capitalises the drive letter in each file name.  This
+             has a permanent effect if the file name was written in the
+             BASIC program or in a variable.
+
+Location:    $25D6
+Description: The error reporting routine contains HALT, as does the normal
+             Spectrum one.
+
+Location:    $2624
+Description: If the error number in 23610 is out of range, the error
+             reporting routine crashes because it does not check the range
+             before using it as an index to a message address table.
+
+Location:    $2B09
+Description: There is a special case for RS232 input which occurs when the
+             48K BASIC editor is active, for example in INPUT #3;a.  It
+             traps both input and output, but does not check before entering
+             an input loop (this is probably OK since the editor does not
+             print anything before this loop gets control).  However, before
+             making a return it calculates the wrong value to be output to
+             port $1FFD, namely (BANKM)|#10.  This will cause a crash.
+
+Location:    $2B60
+Description: The routine which is called for both input and output on
+             channel "P" checks the flags before returning.  If both
+             carry and zero are reset, then it reports "End of file".
+             This should only happen on input (see $2017 and $202B).
+
+Location:    $2DF3
+Description: The copy-disk-to-disk routine appears to check both source
+             and destination to see that they are not "M:" (if they are
+             then they will be treated as normal files and hence give a
+             bad filename error).  However the test is done in upper case
+             on a lower case letter and so always fails.  The routine opens
+             source and destination drives and then, assuming that "M:" is
+             not involved, it tries to open the temporary file unless the
+             RAM drive is too full.  This gives "File already in use" -
+             but apparently not before the contents of the destination
+             drive have been erased.  In any case, copying between "M:"
+             and "A:" should not be allowed because they have different
+             formats.
+
+Location:    $2ECD
+Description: A buffer starting at $ED11 and of length $0800 is used by the
+             COPY command.  This is almost certainly supposed to be in
+             page 7, but instead it is in page 0 where it will overwrite an
+             area of user memory.  If RAMTOP (and hence the machine stack)
+             is in that area when the COPY command is executed then the
+             machine will crash.  This error also occurs at $2F12, $2F61,
+             $2FA7, $3024 and $3043.
+
+Location:    $3150
+Description: The length of the string ".HED#" (where # is an end marker,
+             code $FF) as used in COPY TO SPECTRUM FORMAT is given as 4.
+             This may result in "Bad filename" unless the original file
+             had a file extension of the same length (in which case the
+             original name's end marker is in the right place for the new
+             name).
+
+-----------------
+ROM 2 (+3DOS ROM)
+-----------------
+
+
+Location:    $016C
+Description: BANK678 is not initialised.  It should be set equal to #10
+             so that the STROBE of the centronics port is set high.  Some
+             printers cope with an inverted STROBE, but some don't.
+
+Location:    $079E
+Description: The key beep routine (which is also used for the longer beep
+             when a key press is not accepted) uses 0C80 for the frequency,
+             whereas the 48K spectrum uses $00C8.  This means that the value
+             stored in PIP has 16 times as much effect on the note duration
+             in editor mode as it does during the command INPUT.
+
+Location:    $0A27
+Description: The "line has altered" flag is not cleared when a null line is
+             entered (for example, if you type a space then delete it and
+             press enter).  This means that if you move the cursor up or
+             down on to a program line then the program line is considered
+             to have been changed.
+
+Location:    $0E13
+Description: The "alternate cursor column" is corrupted after a syntax
+             error.  If the cursor was moved from its original position
+             into its error position then the alternate column is zero and
+             the next up or down movement will cause the cursor to jump to
+             the left-hand side of the screen.  If it stayed in the same
+             place then the alternate column is random and so moving up
+             or down will cause unpredictable results [example 6].
+
+Location:    $0E6F
+Description: "LD HL,($F9DB)" should be "LD HL,$F9DB".  This causes several
+             undesirable effects with lines that go off the top of the
+             screen (this is only a problem when using the lower-screen
+             editing mode).  One possible effect is that one or more
+             complete lines are deleted from your input when you press
+             enter.  Another is that there is a delay before the line is
+             successfully entered and when the line is displayed there is a
+             beep and a red cursor on the line.
+
+Location:    $10E4
+Description: After del-word-left and del-word-right, an incorrect "alternate
+             cursor column" is stored.
+
+Location:    $142C
+Description: "RET NC" should be "RET" (harmless).
+
+Location:    $14AF
+Description: On the 48K spectrum, leading spaces are only printed for token
+             codes >=197 starting with a letter.  On the +3, all tokens have
+             spaces before and after.
+
+Location:    $153D
+Description: A program which has a line 0 will display that line ad
+             infinitum if the stored current line number is zero.  This
+             leads to an infinite loop if you try to add a program line.
+
+Location:    $156E
+Description: A line number of 0 is displayed as all blanks.
+
+Location:    $1A95
+Description: When calculating the highest theoretical line number for
+             "renumber", the program ignores the carry flag.  If the line
+             increment is unusually large this might result in an erroneous
+             renumber being accepted and carried out.  The result of doing
+             this will probably crash the machine (in the routine at $1C12)
+             if it is renumbered again.
+
+Location:    $1B48
+Description: If a GOTO cannot be renumbered, the routine just returns
+             instead of warning the user (similarly at $1B63).
+
+Location:    $1B6C
+Description: When the renumber routine fetches the number from after a
+             GOTO, it ignores the flags from the "get integer" routine.
+             Thus, if the number is over 65535 then the routine will fetch a
+             (seemingly) random value.  If this value, or indeed any number
+             following GOTO, is too large (for example, try GOTO 65535)
+             then the program will crash in routine 196E, LINE-ADDR in the
+             spectrum ROM because this routine does not cope with too-big
+             line numbers.
+
+Location:    $1B73
+Description: The programmer intends a GOTO which points past the end of
+             the program to be renumbered to 9999.  If the program has no
+             variables, this will happen.  Otherwise, such a line will be
+             numbered to the lowest line number not used by the program.
+             This is due to the test "CP $80:JR NZ,notend" to test for
+             the end of the program, which should be either "AND $C0 :
+             JR Z,notend" or "CP $28 : JR C,notend".
+
+Location:    $1F71
+Description: "CALL $202F" should be "CALL $1FA9".  If the character ">" or "<"
+             is followed (without a space) by a sequence of letters and then
+             anything except "$", "#" or a space and some more letters, then
+             the character and the sequence of letters is exchanged when
+             you press enter.  For example, "IF foo1<bar2 THEN" changes
+             to "IF foo1bar<2 THEN".
+
+Location:    $20AD
+Description: Following a syntax error, the editor goes through some complex
+             manoeuvres to translate the Spectrum's error marker (positioned
+             at (XPTR)) into a position within the line you typed.  Then it
+             louses it all up by using (XPTR)-(ELINE) instead - except on
+             the rare occasion when that value is further to the right
+             than the position it calculated.  This unnecessary piece
+             of code means that the error marker is almost always wildly
+             inaccurate.
+
+Location:    $20D3
+Description: An "INC DE" is missing.  This means that, on the rare occasion
+             when the bug at $20AD doesn't mess up the position of the error
+             marker, the error marker is displaced rightwards one character
+             for each hidden floating-point form which was inserted to the
+             left of it while the line was being checked.
+
+Location:    ????
+Discoverer:  Matthew Wilson
+Description: The "renumber" routine incorrectly renumbers "FORMAT LINE xxxx"
+             because it expects all "LINE" keywords to be part of "SAVE ...
+             LINE xxxx".
+
+
+========
+EXAMPLES
+========
+
+1.  10 GOSUB 100          This program does not fail at line 110, as one
+    20 RETURN             would expect, but instead keeps going and, when it
+   100 CLEAR 32767        reaches line 20, tries to return to a non-existent
+   110 RETURN             statement.  It also alters memory locations 32768
+                          and 32769, which should be forbidden.
+
+2.  10 PLAY "X8192W0U1&9c"                  Lines 10 and 20 should sound
+    20 PLAY "X8192W0U1&9c","","","","V15"   identical, but they don't since
+                                            V15 affects the "X" register.
+
+3.  10 PLAY "T240N7cccc"           Between each pair of notes there is a
+    20 PLAY "T60N3cccc"            silent gap of one time-unit, which is
+    30 PLAY "T60N3cV15cV15cV15c"   about 1/24 of a crotchet.  Thus the
+                                   notes in line 10 are much closer together
+    than those in line 20.  However, those in line 30 are joined together
+    because the V command before each note makes it sound one time unit
+    early.
+
+4.  10 LPRINT CHAR$ 16;CHR$ 1;"ABC"   Each line reports an error.  Lines 10
+    20 LPRINT INK 1;"ABC"             and 30 say "End of File" while line 20
+    30 LPRINT PAPER 1;"ABC"           says "Nonsense in BASIC".  The reason
+                                      for this latter report is that the
+    INK control causes 2017 to set the carry flag, which remains set
+    through 1F89 (which receives the second control character), and
+    an oversight in the Spectrum ROM at 2210 causes it to think that
+    the colour control routine did not find a colour control.  It then
+    searches for an expression but finds a ';' and reports the error.
+
+5.  10 LPRINT CHR$ 16;       The control byte 16 is stored in TVDATA, but
+    20 PRINT AT 0,0;         so is the control 22 from PRINT AT.  When the
+    30 LPRINT CHR$ 0;"ABC"   earlier control is finished, it is treated as
+                             PRINT AT instead of INK.
+
+6.  Type a syntax error which is just over one line long on the screen.
+    Press enter twice.  Press the down-arrow.  The cursor probably jumps
+    into the middle of the screen.  Press an arrow again and the computer
+    will probably crash.
