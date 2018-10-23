@@ -30,4 +30,9 @@ These disassemblies are annotated and documented by a variety of authors includi
 - Garry Lancaster
 - Ian Collier
 
+## Sources
 
+- [128K disassemblies](http://www.fruitcake.plus.com/Sinclair/Spectrum128/ROMDisassembly/Spectrum128ROMDisassembly.htm)
+- [ZX80, ZX81, 48K disassemblies](https://web.archive.org/web/20150430214523/http://www.wearmouth.demon.co.uk/)
+- [Information on who created what](http://scratchpad.wikia.com/wiki/Sinclair_BASIC_History)
+- [Online HTML cross-linked disassembly](https://skoolkid.github.io/rom/)
