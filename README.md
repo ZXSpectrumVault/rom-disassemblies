@@ -10,6 +10,7 @@ The individuals who worked on each ROM (and each builds on the previous one) are
 - **ZX80** - John Grant of Nine Tiles (1979)
 - **ZX81** - John Grant & Steve Vickers of Nine Tiles (1980)
 - **Spectrum 48K** - Steve Vickers & Richard Altwasser of Nine Tiles (1981)
+- **Spectrum 128K** - Martin Brennan, Steve Berry, Andrew Cummins, Rupert Goodwins and Kevin Males of Sinclair
 - **Spectrum +2** - Cliff Lawson of Amstrad (1985/1986)
 - **Spectrum +3** - Cliff Lawson of Amstrad (1986/1987)
 
@@ -28,3 +29,9 @@ These disassemblies are annotated and documented by a variety of authors includi
 - Paul Farrow 
 - Garry Lancaster
 - Ian Collier
+
+## Sources
+- [http://www.fruitcake.plus.com/Sinclair/Spectrum128/ROMDisassembly/Spectrum128ROMDisassembly.htm]
+- [https://web.archive.org/web/20150430214523/http://www.wearmouth.demon.co.uk/]
+- [http://scratchpad.wikia.com/wiki/Sinclair_BASIC_History]
+- [https://skoolkid.github.io/rom/]
